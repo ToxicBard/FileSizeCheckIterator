@@ -7,25 +7,41 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import commonTools.FileTools;
+import commonTools.LoadingThread;
+import commonTools.Timer;
 
 public class Main {
 
 	public static void main(String[] args) throws IOException {
+		//Declare the necessary variables
+		LoadingThread progressDisplay = new LoadingThread();
+		Timer iterationTimer = new Timer();
 		BufferedWriter outputWriter = FileTools.openWriteFile("out/results.txt");
 		ArrayList<File> matchingFiles;
 		File checkDirectory = FileTools.selectSavedDirectory("Select the check directory", "cfg/checkDirectory.cfg");
-		ComparisonMode comparator = ComparisonMode.LessThan;
-		int checkSize = 50;
+		ComparisonMode comparator = ComparisonMode.EqualTo;
+		int checkSize = 0;
+		
+		//Start the loading display and timer
+		progressDisplay.start();
+		iterationTimer.start();
 		
 		//Do the check iteration
 		matchingFiles = checkFiles(checkDirectory, comparator, checkSize);
 		
 		for(File loopFile : matchingFiles){
-			outputWriter.write(loopFile.getAbsolutePath());
-			outputWriter.write("");
+			outputWriter.write(loopFile.getAbsolutePath() + ", " + loopFile.length() + "\n");
 		}
 		
+		//Close the output file
 		outputWriter.close();
+		
+		//stop the progress display and timer
+		progressDisplay.stopRunning();
+		iterationTimer.stop();
+		
+		//Tell the user how long the iteration took
+		System.out.println(iterationTimer.getElapsedIntervalString());
 	}
 	
 	private static ArrayList<File> checkFiles(File lDirectory, ComparisonMode lComparator, int lSize){
